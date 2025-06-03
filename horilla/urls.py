@@ -21,7 +21,7 @@ from django.http import JsonResponse, HttpResponse
 from django.urls import include, path, re_path
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.secure import never_cache
+from django.views.decorators.cache import never_cache
 
 import notifications.urls
 
