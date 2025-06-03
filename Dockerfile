@@ -3,7 +3,11 @@ FROM python:3.10-slim-bullseye
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
-RUN apt-get update && apt-get install -y libcairo2-dev gcc
+RUN apt-get update && apt-get install -y \
+    libcairo2-dev \
+    gcc \
+    gettext \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/
 
