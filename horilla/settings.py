@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    SECRET_KEY=(str, os.environ.get('SECRET_KEY', 'django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j')),
+    SECRET_KEY=(str, os.environ.get('SECRET_KEY', '6l-bz))_@3&cs8ch8+$5c2^x*_$jbkhxko=!*^&_khkio(q-r%')),
     ALLOWED_HOSTS=(list, os.environ.get('ALLOWED_HOSTS', '*').split(',')),
     CSRF_TRUSTED_ORIGINS=(list, os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000').split(',')),
 )
