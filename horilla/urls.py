@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.db import connection
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import include, path, re_path
 
 import notifications.urls
@@ -62,6 +62,7 @@ urlpatterns = [
     ),
     path("i18n/", include("django.conf.urls.i18n")),
     path("health/", health_check),
+    path('health-check/', health_check, name='health_check'),
 ]
 
 # if settings.DEBUG:

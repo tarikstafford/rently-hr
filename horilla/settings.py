@@ -249,6 +249,11 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 CSRF_COOKIE_DOMAIN = None  # Let Django handle this automatically
 
+# Exempt health check from HTTPS redirect
+SECURE_SSL_REDIRECT_EXEMPT = [
+    r'^health-check/$',
+]
+
 # CORS Settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
