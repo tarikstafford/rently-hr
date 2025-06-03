@@ -24,13 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 env = environ.Env(
-    DEBUG=(bool, True),
-    SECRET_KEY=(
-        str,
-        "django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j",
-    ),
-    ALLOWED_HOSTS=(list, ["*"]),
-    CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:8000"]),
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, os.environ.get('SECRET_KEY', 'django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j')),
+    ALLOWED_HOSTS=(list, os.environ.get('ALLOWED_HOSTS', '*').split(',')),
+    CSRF_TRUSTED_ORIGINS=(list, os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000').split(',')),
 )
 
 env.read_env(os.path.join(BASE_DIR, ".env"), overwrite=True)
@@ -78,14 +75,14 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 ROOT_URLCONF = "horilla.urls"
@@ -241,3 +238,25 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Security Settings
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+CSRF_COOKIE_DOMAIN = None  # Let Django handle this automatically
+
+# CORS Settings
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
