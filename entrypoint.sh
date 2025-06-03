@@ -29,19 +29,38 @@ done
 
 echo "Database is ready! Running migrations..."
 
-# Run migrations
+# Run migrations with error handling
 echo "Running migrations..."
-python3 manage.py makemigrations --verbosity 2
-python3 manage.py migrate --verbosity 2
+if ! python3 manage.py makemigrations --verbosity 2; then
+    echo "Error: Failed to make migrations"
+    exit 1
+fi
 
-# Compile translations
+if ! python3 manage.py migrate --verbosity 2; then
+    echo "Error: Failed to apply migrations"
+    exit 1
+fi
+
+# Compile translations with error handling
 echo "Compiling translations..."
-python3 manage.py compilemessages --verbosity 2
+if ! python3 manage.py compilemessages --verbosity 2; then
+    echo "Warning: Failed to compile messages, continuing anyway..."
+fi
 
 # Create admin user if it doesn't exist
 echo "Setting up admin user..."
-python3 manage.py createhorillauser --first_name admin --last_name admin --username admin --password admin --email admin@example.com --phone 1234567890
+if ! python3 manage.py createhorillauser --first_name admin --last_name admin --username admin --password admin --email admin@example.com --phone 1234567890; then
+    echo "Warning: Failed to create admin user, continuing anyway..."
+fi
 
-# Start Gunicorn
+# Start Gunicorn with error handling
 echo "Starting Gunicorn..."
-exec gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 --log-level debug horilla.wsgi:application
+exec gunicorn \
+    --bind 0.0.0.0:${PORT:-8000} \
+    --workers 2 \
+    --timeout 120 \
+    --log-level debug \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output \
+    horilla.wsgi:application
