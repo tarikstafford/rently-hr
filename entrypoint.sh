@@ -29,6 +29,14 @@ python3 manage.py migrate
 echo "Collecting static files..."
 python3 manage.py collectstatic --noinput
 
+# Compile translations
+echo "Compiling translations..."
+python3 manage.py compilemessages
+
+# Initialize database with demo data
+echo "Initializing database with demo data..."
+python3 manage.py load_demo_database
+
 # Create admin user if it doesn't exist
 echo "Setting up admin user..."
 python3 manage.py createhorillauser --first_name admin --last_name admin --username admin --password admin --email admin@example.com --phone 1234567890
