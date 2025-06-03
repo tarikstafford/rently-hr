@@ -6,7 +6,8 @@ print(f"Environment variables: {dict(os.environ)}", file=sys.stderr)
 print(f"PORT from env: {os.getenv('PORT')}", file=sys.stderr)
 
 # Server socket
-port = os.getenv('PORT', '8000')
+# Railway sets PORT=8080, but we need to use the TCP proxy port
+port = os.getenv('RAILWAY_TCP_PROXY_PORT', os.getenv('PORT', '8000'))
 print(f"Using port: {port}", file=sys.stderr)
 bind = f"0.0.0.0:{port}"
 backlog = 2048

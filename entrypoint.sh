@@ -8,6 +8,7 @@ env | sort
 
 echo "Starting application setup..."
 echo "Using PORT: ${PORT:-8000}"
+echo "Using RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT:-8000}"
 
 # Check if secret key is set and not using default value
 if [ -z "$SECRET_KEY" ] || [ "$SECRET_KEY" = "django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j" ]; then
@@ -72,10 +73,10 @@ fi
 # Start Gunicorn with error handling
 echo "Starting Gunicorn..."
 echo "PORT environment variable: ${PORT}"
-echo "Using port: ${PORT:-8000}"
+echo "RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT}"
 
-# Export PORT to ensure it's available to Gunicorn
-export PORT=${PORT:-8000}
+# Export the correct port for Gunicorn
+export PORT=${RAILWAY_TCP_PROXY_PORT:-${PORT:-8000}}
 echo "Exported PORT: ${PORT}"
 
 exec gunicorn -c gunicorn.conf.py horilla.wsgi:application
