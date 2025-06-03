@@ -3,6 +3,7 @@
 set -e  # Exit on error
 
 echo "Starting application setup..."
+echo "Using PORT: ${PORT:-8000}"
 
 # Function to check if database is accepting connections
 check_db() {
@@ -54,7 +55,7 @@ if ! python3 manage.py createhorillauser --first_name admin --last_name admin --
 fi
 
 # Start Gunicorn with error handling
-echo "Starting Gunicorn..."
+echo "Starting Gunicorn on port ${PORT:-8000}..."
 exec gunicorn \
     --bind 0.0.0.0:${PORT:-8000} \
     --workers 2 \
@@ -63,4 +64,5 @@ exec gunicorn \
     --access-logfile - \
     --error-logfile - \
     --capture-output \
+    --forwarded-allow-ips "*" \
     horilla.wsgi:application
