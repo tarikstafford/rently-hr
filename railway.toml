@@ -22,7 +22,7 @@ POSTGRES_DB = "${PGDATABASE}"
 POSTGRES_USER = "${PGUSER}"
 POSTGRES_PASSWORD = "${PGPASSWORD}"
 POSTGRES_PORT = "${PGPORT}"
-DATABASE_URL = "${DATABASE_URL}
+DATABASE_URL = "${DATABASE_URL}"
 
 # Wait for database to be ready
 [deploy.dependencies]
