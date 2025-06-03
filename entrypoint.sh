@@ -76,4 +76,6 @@ exec gunicorn \
     --error-logfile - \
     --capture-output \
     --forwarded-allow-ips "*" \
+    --proxy-protocol \
+    --proxy-allow-from "*" \
     horilla.wsgi:application

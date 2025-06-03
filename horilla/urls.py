@@ -22,10 +22,13 @@ from django.urls import include, path, re_path
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
+import logging
 
 import notifications.urls
 
 from . import settings
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
@@ -37,17 +40,25 @@ def health_check(request):
     1. Application is running
     2. Database connection is working
     """
+    logger.info(f"Health check request received from {request.META.get('REMOTE_ADDR')}")
+    logger.info(f"Request scheme: {request.scheme}")
+    logger.info(f"Request headers: {request.headers}")
+    
     try:
         # Check database connection
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
         
+        logger.info("Health check successful")
         return JsonResponse({
             "status": "ok",
-            "database": "connected"
+            "database": "connected",
+            "scheme": request.scheme,
+            "headers": dict(request.headers)
         }, status=200)
     except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
         return JsonResponse({
             "status": "error",
             "message": str(e)

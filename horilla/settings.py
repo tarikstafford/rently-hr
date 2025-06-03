@@ -247,6 +247,7 @@ CSRF_COOKIE_DOMAIN = None  # Let Django handle this automatically
 # Exempt health check from HTTPS redirect
 SECURE_SSL_REDIRECT_EXEMPT = [
     r'^health/$',
+    r'^health$',
 ]
 
 # CORS Settings
