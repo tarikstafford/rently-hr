@@ -2,6 +2,10 @@
 
 set -e  # Exit on error
 
+# Debug logging
+echo "Environment variables:"
+env | sort
+
 echo "Starting application setup..."
 echo "Using PORT: ${PORT:-8000}"
 
@@ -66,5 +70,12 @@ if ! python3 manage.py createhorillauser --first_name admin --last_name admin --
 fi
 
 # Start Gunicorn with error handling
-echo "Starting Gunicorn on port ${PORT:-8000}..."
+echo "Starting Gunicorn..."
+echo "PORT environment variable: ${PORT}"
+echo "Using port: ${PORT:-8000}"
+
+# Export PORT to ensure it's available to Gunicorn
+export PORT=${PORT:-8000}
+echo "Exported PORT: ${PORT}"
+
 exec gunicorn -c gunicorn.conf.py horilla.wsgi:application

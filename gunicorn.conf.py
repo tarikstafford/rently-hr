@@ -1,7 +1,14 @@
 import os
+import sys
+
+# Debug logging
+print(f"Environment variables: {dict(os.environ)}", file=sys.stderr)
+print(f"PORT from env: {os.getenv('PORT')}", file=sys.stderr)
 
 # Server socket
-bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
+port = os.getenv('PORT', '8000')
+print(f"Using port: {port}", file=sys.stderr)
+bind = f"0.0.0.0:{port}"
 backlog = 2048
 
 # Worker processes
@@ -29,4 +36,8 @@ secure_scheme_headers = {
 
 # Proxy
 proxy_protocol = True
-proxy_allow_from = '*' 
+proxy_allow_from = '*'
+
+# Debug mode
+capture_output = True
+enable_stdio_inheritance = True 
