@@ -6,8 +6,8 @@ echo "Starting application setup..."
 
 # Function to check if database is accepting connections
 check_db() {
-    # Try to connect to the database using psql
-    PGPASSWORD=$POSTGRES_PASSWORD psql -h $PG_HOST -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1" >/dev/null 2>&1
+    # Try to connect to the database using DATABASE_URL
+    python3 manage.py check --database default >/dev/null 2>&1
     return $?
 }
 
@@ -19,10 +19,6 @@ while ! check_db; do
     retry_count=$((retry_count + 1))
     if [ $retry_count -gt $max_retries ]; then
         echo "Database connection failed after $max_retries attempts"
-        echo "Current database settings:"
-        echo "Host: ${PG_HOST:-not set}"
-        echo "Database: ${POSTGRES_DB:-not set}"
-        echo "User: ${POSTGRES_USER:-not set}"
         exit 1
     fi
     echo "Database not ready yet... waiting (attempt $retry_count/$max_retries)"
@@ -33,7 +29,7 @@ echo "Database is ready! Setting up database and role..."
 
 # Create horilla role and database
 echo "Creating horilla role and database..."
-PGPASSWORD=$POSTGRES_PASSWORD psql -h $PG_HOST -U $POSTGRES_USER -d postgres << EOF
+python3 manage.py dbshell << EOF
 DO
 \$do\$
 BEGIN
@@ -48,9 +44,6 @@ END
 SELECT 'CREATE DATABASE horilla_main OWNER horilla'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'horilla_main')\gexec
 EOF
-
-# Update DATABASE_URL to use the new database
-export DATABASE_URL=${DATABASE_URL}
 
 echo "Database and role created successfully!"
 
