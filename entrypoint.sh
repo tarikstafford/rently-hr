@@ -8,87 +8,97 @@ env | sort
 
 echo "Starting application setup..."
 echo "Using PORT: ${PORT:-8000}"
-echo "Using RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT:-8000}"
+echo "Using RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT:-not set}"
 
-# Check if secret key is set and not using default value
-if [ -z "$SECRET_KEY" ] || [ "$SECRET_KEY" = "django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j" ]; then
-    echo "WARNING: SECRET_KEY is not set or using default value. This is not secure for production!"
-    echo "Please set a secure SECRET_KEY in your Railway environment variables."
+# Check for required environment variables
+if [ -z "$SECRET_KEY" ]; then
+    echo "WARNING: SECRET_KEY is not set!"
 fi
 
-# Check if we're using the default database URL
 if [ -z "$DATABASE_URL" ]; then
-    echo "WARNING: DATABASE_URL is not set. Using default SQLite database."
+    echo "WARNING: DATABASE_URL is not set!"
 fi
 
-# Function to check if database is accepting connections
+# Function to check database connectivity
 check_db() {
-    echo "Checking database connection..."
-    # Try to connect to the database using DATABASE_URL
-    python3 manage.py check --database default
-    return $?
+    python << END
+import sys
+import psycopg2
+from urllib.parse import urlparse
+import time
+
+def wait_for_db():
+    max_retries = 30
+    retry_interval = 2
+    
+    for i in range(max_retries):
+        try:
+            db_url = "${DATABASE_URL}"
+            if not db_url:
+                print("DATABASE_URL is not set")
+                sys.exit(1)
+                
+            result = urlparse(db_url)
+            conn = psycopg2.connect(
+                dbname=result.path[1:],
+                user=result.username,
+                password=result.password,
+                host=result.hostname,
+                port=result.port
+            )
+            conn.close()
+            print("Database is ready!")
+            return True
+        except Exception as e:
+            print(f"Database not ready... attempt {i+1}/{max_retries}")
+            print(f"Error: {str(e)}")
+            if i < max_retries - 1:
+                time.sleep(retry_interval)
+    return False
+
+if not wait_for_db():
+    print("Could not connect to database after maximum retries")
+    sys.exit(1)
+END
 }
 
-# Wait for database to be ready
-echo "Waiting for database to be ready..."
-max_retries=30
-retry_count=0
-while ! check_db; do
-    retry_count=$((retry_count + 1))
-    if [ $retry_count -gt $max_retries ]; then
-        echo "Database connection failed after $max_retries attempts"
-        echo "Current DATABASE_URL: ${DATABASE_URL}"
-        exit 1
-    fi
-    echo "Database not ready yet... waiting (attempt $retry_count/$max_retries)"
-    sleep 2
-done
+# Wait for database
+check_db
 
-echo "Database is ready! Running migrations..."
-
-# Run migrations with error handling
+# Run migrations
 echo "Running migrations..."
-if ! python3 manage.py makemigrations --verbosity 2; then
-    echo "Error: Failed to make migrations"
-    exit 1
-fi
-
-if ! python3 manage.py migrate --verbosity 2; then
-    echo "Error: Failed to apply migrations"
-    exit 1
-fi
-
-# Compile translations with error handling
-echo "Compiling translations..."
-if ! python3 manage.py compilemessages --verbosity 2; then
-    echo "Warning: Failed to compile messages, continuing anyway..."
-fi
+python manage.py migrate
 
 # Create admin user if it doesn't exist
 echo "Setting up admin user..."
-if ! python3 manage.py shell -c "
+python << END
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'horilla.settings')
+django.setup()
+
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin')
-    print('Admin user created successfully')
+
+username = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
+email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
+password = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'admin')
+
+if not User.objects.filter(username=username).exists():
+    print(f"Creating superuser {username}...")
+    User.objects.create_superuser(username, email, password)
+    print("Superuser created successfully!")
 else:
-    print('Admin user already exists')
-"; then
-    echo "Warning: Failed to create admin user, continuing anyway..."
-fi
+    print(f"Superuser {username} already exists.")
+END
 
-# Start Gunicorn with error handling
-echo "Starting Gunicorn..."
-echo "PORT environment variable: ${PORT}"
-echo "RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT}"
+# Collect static files
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
 
-# Export the correct port for Gunicorn
+# Set the correct port for Gunicorn
 export PORT=${RAILWAY_TCP_PROXY_PORT:-${PORT:-8000}}
-echo "Exported PORT: ${PORT}"
+echo "Starting Gunicorn on port $PORT..."
 
-# Test the health check endpoint before starting Gunicorn
-echo "Testing health check endpoint..."
-curl -v http://localhost:${PORT}/health/ || true
-
+# Start Gunicorn
 exec gunicorn -c gunicorn.conf.py horilla.wsgi:application

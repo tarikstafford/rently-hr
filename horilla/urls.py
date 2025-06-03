@@ -36,33 +36,16 @@ logger = logging.getLogger(__name__)
 @require_http_methods(["GET"])
 def health_check(request):
     """
-    Health check endpoint that verifies:
-    1. Application is running
-    2. Database connection is working
+    Simple health check endpoint that returns 200 OK.
+    This endpoint is exempt from CSRF and SSL redirect.
     """
     logger.info(f"Health check request received from {request.META.get('REMOTE_ADDR')}")
     logger.info(f"Request scheme: {request.scheme}")
     logger.info(f"Request headers: {request.headers}")
+    logger.info(f"Request path: {request.path}")
+    logger.info(f"Request method: {request.method}")
     
-    try:
-        # Check database connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            cursor.fetchone()
-        
-        logger.info("Health check successful")
-        return JsonResponse({
-            "status": "ok",
-            "database": "connected",
-            "scheme": request.scheme,
-            "headers": dict(request.headers)
-        }, status=200)
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return JsonResponse({
-            "status": "error",
-            "message": str(e)
-        }, status=500)
+    return HttpResponse("OK", status=200, content_type="text/plain")
 
 
 urlpatterns = [
