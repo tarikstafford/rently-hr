@@ -97,7 +97,8 @@ echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
 # Set the correct port for Gunicorn
-export PORT=${RAILWAY_TCP_PROXY_PORT:-${PORT:-8000}}
+# Railway sets PORT=8080, but we need to use that port
+export PORT=${PORT:-8000}
 echo "Starting Gunicorn on port $PORT..."
 
 # Start Gunicorn
