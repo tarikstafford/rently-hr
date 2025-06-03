@@ -66,7 +66,15 @@ fi
 
 # Create admin user if it doesn't exist
 echo "Setting up admin user..."
-if ! python3 manage.py createhorillauser --first_name admin --last_name admin --username admin --password admin --email admin@example.com --phone 1234567890; then
+if ! python3 manage.py shell -c "
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin')
+    print('Admin user created successfully')
+else:
+    print('Admin user already exists')
+"; then
     echo "Warning: Failed to create admin user, continuing anyway..."
 fi
 
@@ -78,5 +86,9 @@ echo "RAILWAY_TCP_PROXY_PORT: ${RAILWAY_TCP_PROXY_PORT}"
 # Export the correct port for Gunicorn
 export PORT=${RAILWAY_TCP_PROXY_PORT:-${PORT:-8000}}
 echo "Exported PORT: ${PORT}"
+
+# Test the health check endpoint before starting Gunicorn
+echo "Testing health check endpoint..."
+curl -v http://localhost:${PORT}/health/ || true
 
 exec gunicorn -c gunicorn.conf.py horilla.wsgi:application
