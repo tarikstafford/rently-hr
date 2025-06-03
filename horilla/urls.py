@@ -16,6 +16,7 @@ Including another URLconf
 
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.db import connection
 from django.http import JsonResponse
 from django.urls import include, path, re_path
 
@@ -25,7 +26,26 @@ from . import settings
 
 
 def health_check(request):
-    return JsonResponse({"status": "ok"}, status=200)
+    """
+    Health check endpoint that verifies:
+    1. Application is running
+    2. Database connection is working
+    """
+    try:
+        # Check database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        
+        return JsonResponse({
+            "status": "ok",
+            "database": "connected"
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
 
 
 urlpatterns = [
