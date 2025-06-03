@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    SECRET_KEY=(str, os.environ.get('SECRET_KEY', '6l-bz))_@3&cs8ch8+$5c2^x*_$jbkhxko=!*^&_khkio(q-r%')),
+    SECRET_KEY=(str, os.environ.get('SECRET_KEY', 'django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j')),
     ALLOWED_HOSTS=(list, os.environ.get('ALLOWED_HOSTS', '*').split(',')),
     CSRF_TRUSTED_ORIGINS=(list, os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000').split(',')),
 )
@@ -240,12 +240,12 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Security Settings
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=True)
+CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=True)
+CSRF_COOKIE_SAMESITE = env('CSRF_COOKIE_SAMESITE', default='Lax')
+SESSION_COOKIE_SAMESITE = env('SESSION_COOKIE_SAMESITE', default='Lax')
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 CSRF_COOKIE_DOMAIN = None  # Let Django handle this automatically
 

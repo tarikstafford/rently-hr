@@ -5,6 +5,17 @@ set -e  # Exit on error
 echo "Starting application setup..."
 echo "Using PORT: ${PORT:-8000}"
 
+# Check if secret key is set and not using default value
+if [ -z "$SECRET_KEY" ] || [ "$SECRET_KEY" = "django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j" ]; then
+    echo "WARNING: SECRET_KEY is not set or using default value. This is not secure for production!"
+    echo "Please set a secure SECRET_KEY in your Railway environment variables."
+fi
+
+# Check if we're using the default database URL
+if [ -z "$DATABASE_URL" ]; then
+    echo "WARNING: DATABASE_URL is not set. Using default SQLite database."
+fi
+
 # Function to check if database is accepting connections
 check_db() {
     echo "Checking database connection..."
