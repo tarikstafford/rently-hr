@@ -27,27 +27,7 @@ while ! check_db; do
     sleep 2
 done
 
-echo "Database is ready! Setting up database and role..."
-
-# Create horilla role and database
-echo "Creating horilla role and database..."
-python3 manage.py dbshell << EOF
-DO
-\$do\$
-BEGIN
-   IF NOT EXISTS (
-      SELECT FROM pg_catalog.pg_roles
-      WHERE  rolname = 'horilla') THEN
-      CREATE ROLE horilla LOGIN PASSWORD 'horilla';
-   END IF;
-END
-\$do\$;
-
-SELECT 'CREATE DATABASE horilla_main OWNER horilla'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'horilla_main')\gexec
-EOF
-
-echo "Database and role created successfully!"
+echo "Database is ready! Running migrations..."
 
 # Run migrations
 echo "Running migrations..."
